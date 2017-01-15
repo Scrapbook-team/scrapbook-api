@@ -4,8 +4,8 @@ const bcrypt = require('bcrypt-nodejs');
 const validator = require('email-validator');
 
 var userSchema = new Schema({
-        firstName: {type: String, required: true, trim: true},
-        lastName: {type: String, required: true, trim: true},
+    firstName: {type: String, required: true, trim: true, sparse: true},
+        lastName: {type: String, required: true, trim: true, sparse: true},
         email: {type: String, trim: true, required: true, unique: true, sparse: true},
         phone: {type: String, sparse: true},
         hash: {type: String, required: true},
@@ -15,16 +15,19 @@ var userSchema = new Schema({
         resetToken: String,
         contacts: [{
             contactId: Schema.ObjectId,
-            name: String
+            name: String,
+            _id: false
         }],
         groups: [{
             groupId: Schema.ObjectId,
             name: String,
-            description: String
+            description: String,
+            _id: false
         }],
         media: [{
             mediaId: Schema.ObjectId,
-            url: String
+            url: String,
+            _id: false
         }]
     },
     {
@@ -36,6 +39,7 @@ var userSchema = new Schema({
     }
 );
 
+// Validate email before saving document.
 userSchema.pre('save', function(next) {
     // use email-validator or regex from emailregex.com
     if (!validator.validate(this.email) || 
@@ -48,6 +52,7 @@ userSchema.pre('save', function(next) {
 });
 
 
+// Validate password.
 userSchema.methods.comparePassword = function(pw, callback) {
     bcrypt.compare(pw, this.hash, (err, isMatch) => {
         if (err) return callback(err);

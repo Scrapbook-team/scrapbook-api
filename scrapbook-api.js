@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const config = require('./models/config');
 
 const users = require('./controllers/users');
+const auth = require('./controllers/auth');
 
 // http://mongoosejs.com/docs/promises.html
 mongoose.Promise = global.Promise;
@@ -36,8 +37,23 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 router.route('/users')
-    .post(users.createUser)
+    .post(users.createUser, auth.loginUser)
+router.route('/users/:id')
+    .get(auth.validateToken, users.getUserById)
+    .put(auth.validateToken, users.updateUser)
+    .delete(auth.validateToken, users.deleteUser)
+router.route('/users/:id/contacts')
+    .get(auth.validateToken, users.getContacts)
+    .post(auth.validateToken, users.addContact)
+//router.route('/users/:id/contacts/:contactId')
+//    .delete(users.deleteContact)
+//router.route('/users/:id/groups')
+//    .get(user.getGroups)
 
+router.route('/auth/token')
+    .post(auth.loginUser);
+
+    
 app.use('/', router);
 
 // handle 404
