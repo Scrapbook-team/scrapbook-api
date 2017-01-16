@@ -5,7 +5,12 @@ const User = require('../models/schemas/user');
  * Get a user
  */
 exports.getUserById = (req, res, next) => {
-    User.findById(req.params.id).select('-contacts -media -groups -hash').exec((err, user) => {
+    // Ensure valid id is passed.
+    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+        return res.status(404).send('Invalid params');
+
+    // Perform find query.
+    User.findById(req.params.id).select('-contacts -media -groups -hash -token -resetToken').exec((err, user) => {
         if (err) return next(err);
         if (!user) return res.status(404).send('No user with that ID');
         res.json(user);
@@ -68,6 +73,10 @@ exports.createUser = (req, res, next) => {
  * Update a users document.
  */
 exports.updateUser = (req, res, next) => {
+    // Ensure valid id is passed.
+    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+        return res.status(404).send('Invalid params');
+    
     // check for new values
     if (!req.body.newValues) res.status(400).send('No new values given');
     
@@ -94,7 +103,7 @@ exports.updateUser = (req, res, next) => {
     }
 
     // update document
-    User.findOneAndUpdate(req.params.id, userData, (err, user) => {
+    User.findByIdAndUpdate(req.params.id, userData, (err, user) => {
         if (err) return next(err);
         if (!user) return res.status(404).send('No user with that id');
         return res.sendStatus(200);
@@ -105,6 +114,10 @@ exports.updateUser = (req, res, next) => {
  * Delete a user by their id.
  */
 exports.deleteUser = (req, res, next) => {
+    // Ensure valid id is passed.
+    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+        return res.status(404).send('Invalid params');
+    
     User.findOneAndRemove(req.params.id, (err, user) => {
         if (err) return next(err);
         if (!user) return res.status(404).send('No user with that id');

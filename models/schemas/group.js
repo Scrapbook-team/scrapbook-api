@@ -8,6 +8,7 @@ var groupSchema = new Schema({
         members: [{
             memberId: Schema.ObjectId,
             name: String,
+            owner: Boolean,
             _id: false
         }],
         conversations: [{

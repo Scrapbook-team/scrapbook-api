@@ -8,6 +8,7 @@ const config = require('./models/config');
 
 const users = require('./controllers/users');
 const auth = require('./controllers/auth');
+const group = require('./controllers/groups');
 
 // http://mongoosejs.com/docs/promises.html
 mongoose.Promise = global.Promise;
@@ -49,6 +50,12 @@ router.route('/users/:id/contacts')
 //    .delete(users.deleteContact)
 //router.route('/users/:id/groups')
 //    .get(user.getGroups)
+
+router.route('/groups')
+    .post(auth.validateToken, group.createGroup)
+router.route('/groups/:id')
+    .get(auth.validateToken, group.getGroupById)
+    .put(auth.validateToken, group.updateGroup)
 
 router.route('/auth/token')
     .post(auth.loginUser);
