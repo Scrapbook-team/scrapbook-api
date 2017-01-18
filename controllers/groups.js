@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Group = require('../models/schemas/group');
 const Conversation = require('../models/schemas/group');
+const User = require('../models/schemas/user');
 
 /*
  * Get info for a group.
@@ -70,7 +71,7 @@ exports.updateGroup = (req, res, next) => {
     // This can only be done if user is group owner
 
     // Update document.
-    Group.findOneAndUpdate(req.params.id, groupData, (err, group) => {
+    Group.findByIdAndUpdate(req.params.id, groupData, (err, group) => {
         if (err) return next(err);
         if (!group) return res.status(404).send('No group with that id');
         return res.sendStatus(200);
@@ -82,6 +83,71 @@ exports.deleteGroup = (req, res, next) => {
 
 
 exports.addMember = (req, res, next) => {
+    // Validate memberId.
+    if (!mongoose.Types.ObjectId.isValid(req.body.memberId))
+        return res.status(404).send('Invalid memberId');
+
+    User.findById(req.body.memberId, (err, user) => {
+        if (err) return next(err);
+        if (!user) return res.status(404).send('No user with that id');
+
+        var memberData = {
+            memberId: user._id, 
+            name: user.firstName + user.lastName
+        };
+        
+        // Update group with new member.
+        Group.findByIdAndUpdate(req.params.id,
+        {$addToSet: {members: memberData}},
+        (err, group) => {
+            if (err) return next(err);
+            if (!group) return res.status(404).send('No group with that id');
+           
+            var groupData = {
+                groupId: group._id,
+                name: group.name,
+                description: group.description
+            };
+            
+            // Now update user with group information.
+            User.findByIdAndUpdate(req.body.memberId, 
+            {$addToSet: {groups: groupData}},
+            (err, user) => {
+                if (err) return next(err);
+                if (!user) return res.status(404).send('No user with that id');
+
+                return res.sendStatus(200);
+            });
+        }); 
+
+    });
+    /*
+    var memberData = {};
+    var groupData = {};
+
+    User.findById(req.body.memberId)
+        .then(user => {
+            console.log(user); 
+            memberData.memberId = user._id;
+            if (user.firstName && user.lastName)
+                memberData.name = user.firstName + ' ' + user.lastName;
+            else memberData.name = '';
+        })
+        .then(Group.findById(req.params.id).exec())
+        .then(group => {
+            console.log(req.params.id);
+            groupData.groupId = group._id;
+            groupData.name = group.name;
+        })
+        .then(Promise.all([
+            User.findByIdAndUpdate(req.body.memberId,
+                {$addToSet: {groups: groupData}}),
+            Group.findByIdAndUpdate(req.params.id,
+                {$addToSet: {members: memberData}})
+        ]))
+        .catch((err) => {
+            return next(err);
+         });*/
 };
 
 exports.getMembers = (req, res, next) => {

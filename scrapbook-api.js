@@ -56,6 +56,8 @@ router.route('/groups')
 router.route('/groups/:id')
     .get(auth.validateToken, group.getGroupById)
     .put(auth.validateToken, group.updateGroup)
+router.route('/groups/:id/members')
+    .post(auth.validateToken, group.addMember)
 
 router.route('/auth/token')
     .post(auth.loginUser);
