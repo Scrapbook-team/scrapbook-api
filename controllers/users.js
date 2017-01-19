@@ -13,7 +13,13 @@ exports.getUserById = (req, res, next) => {
     User.findById(req.params.id).select('-contacts -media -groups -hash -token -resetToken').exec((err, user) => {
         if (err) return next(err);
         if (!user) return res.status(404).send('No user with that ID');
-        res.json(user);
+
+        // Replace all the ids in the contacts array with denormalized values for names, etc
+        user.populate('contacts', 'firstName lastName', (err, user) => {
+            if (err) return next(err);
+            return res.json(user);
+        });
+
     });
 };
 
@@ -45,27 +51,19 @@ exports.createUser = (req, res, next) => {
         userData.phone = req.body.phone;
     if (req.body.bio && typeof req.body.bio === 'string')
         userData.bio = req.body.bio;
-    if (req.body.contacts && req.body.contacts.length != 0) {
-        var addContacts = true;
-        for(var i = 0; i < req.body.contacts.length; i++) {
-            if (!validateContact(req.body.contacts[i])) {
-                console.log("Invalid contacts");
-                addContacts = false;
-            }
-        }
-        if (addContacts) userData.contacts = req.body.contacts;
-    }
     if (req.body.password) userData.hash = req.body.password;
     if (req.body.hash) userData.hash = req.body.hash;
+    
+    // Contacts will be validated in pre-save hooks.
+    userData.contacts = req.body.contacts;
 
-    // save document
+    // Save new user.
     var newUser = new User(userData);
-    newUser.save()
-    .then(result => next())
-    .catch((err) => {
-        if(err) 
+    newUser.save((err, user) => {
+        if (err) {
             if (err.code === 11000) return res.status(400).send('Email taken');
-        next(err);
+            return next(err);
+        }            
     });
 };
 
@@ -132,7 +130,12 @@ exports.getContacts = (req, res, next) => {
     User.findById(req.params.id).select('contacts').exec((err, user) => {
         if (err) return next(err);
         if (!user) return res.status(404).send('No user with that id');
-        return res.json(user);
+        
+        // Replace all the ids in the contacts array with denormalized values for names, etc
+        user.populate('contacts', 'firstName lastName', (err, user) => {
+            if (err) return next(err);
+            return res.json(user);
+        });
     });
 };
 
@@ -140,23 +143,19 @@ exports.getContacts = (req, res, next) => {
  * Add a contact to a user.
  */
 exports.addContact = (req, res, next) => {
-    // Validate contact
-    if (!validateContact(req.body)) return res.status(400).send('Invalid contact');
-    
-    var contactData = {
-        contactId: req.body.contactId,
-        name: req.body.name
-    };
+    // Validate contact id
+    if (!mongoose.Types.ObjectId.isValid(req.body.contactId))
+        return res.status(400).send('Invalid contact id');
     
     // Add new contact to array of contacts in user document.
     User.findByIdAndUpdate(req.params.id,
-        {$addToSet: {contacts: contactData}}, 
+        {$addToSet: {contacts: req.body.contactId}}, 
         (err, user) => {
             if (err) return next(err);
             if (!user) return res.status(404).send('No user with that id');
+
             return res.sendStatus(200);
     });
-
 };
 
 /*
@@ -169,4 +168,3 @@ function validateContact(contact) {
     if (!(typeof contact.name === 'string')) return false;
     return true;
 }
-

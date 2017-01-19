@@ -14,20 +14,16 @@ var userSchema = new Schema({
         token: String,
         resetToken: String,
         contacts: [{
-            contactId: Schema.ObjectId,
-            name: String,
-            _id: false
+            type: Schema.ObjectId,
+            ref: 'User'
         }],
         groups: [{
-            groupId: Schema.ObjectId,
-            name: String,
-            description: String,
-            _id: false
+            type: Schema.ObjectId,
+            ref: 'Group'
         }],
         media: [{
-            mediaId: Schema.ObjectId,
-            url: String,
-            _id: false
+            type: Schema.ObjectId,
+            ref: 'Media'
         }]
     },
     {

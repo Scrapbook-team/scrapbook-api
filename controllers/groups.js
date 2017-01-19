@@ -86,6 +86,23 @@ exports.addMember = (req, res, next) => {
     // Validate memberId.
     if (!mongoose.Types.ObjectId.isValid(req.body.memberId))
         return res.status(404).send('Invalid memberId');
+    
+    Group.findByIdAndUpdate(req.params.id,
+        {$addToSet: {members: req.body.memberId}},
+        (err, group) => {
+            if (err) return next(err);
+            if (!group) return res.status(404).send('No group with that id');
+
+            User.findByIdAndUpdate(req.body.memberId,
+                {$addToSet: {groups: req.params.id}},
+                (err, user) => {
+                    if (err) return next(err) 
+                    if (!user) res.status(404).send('No user with that id');
+                    
+                    res.sendStatus(200);
+            });
+    });
+
 
     User.findById(req.body.memberId, (err, user) => {
         if (err) return next(err);

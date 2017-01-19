@@ -6,24 +6,16 @@ var groupSchema = new Schema({
         description: String,
         background: String,
         members: [{
-            memberId: Schema.ObjectId,
-            name: String,
-            owner: Boolean,
-            _id: false
+            type: Schema.ObjectId,
+            ref: 'User'
         }],
         conversations: [{
-            conversationId: Schema.ObjectId,
-        }],
-        groups: [{
-            groupId: Schema.ObjectId,
-            name: String,
-            description: String,
-            _id: false
+            type: Schema.ObjectId,
+            ref: 'Conversation'
         }],
         media: [{
-            mediaId: Schema.ObjectId,
-            url: String,
-            _id: false
+            type: Schema.ObjectId,
+            ref: 'Media'
         }]
     },
     {
