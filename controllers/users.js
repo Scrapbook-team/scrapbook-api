@@ -159,6 +159,21 @@ exports.addContact = (req, res, next) => {
 };
 
 /*
+ * List groups a user is a part of.
+ */
+exports.getGroups = (req, res, next) => {
+    User.findById(req.params.id)
+        .select('groups')
+        .populate('groups', 'name description')
+        .exec((err, user) => {
+            if (err) return next(user);
+            if (!user) return res.status(404).send('No user with that id');
+
+            return res.json(user);
+    });
+};
+
+/*
  * Validate a contact in a user's document
  */
 function validateContact(contact) {

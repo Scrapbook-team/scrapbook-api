@@ -15,7 +15,14 @@ exports.getGroupById = (req, res, next) => {
     Group.findById(req.params.id, (err, group) => {
         if (err) return next(err);
         if (!group) return res.status(404).send('No group with that id');
-        res.json(group);
+        
+        // Populate references to other schemas.
+        group.populate('members', 'firstName lastName', (err, group) => {
+            if (err) return next(err);
+            if (!group) return res.status(404).send('No group with that id');
+
+            return res.json(group);
+        });
     });
 };
 
@@ -33,7 +40,7 @@ exports.createGroup = (req, res, next) => {
     if (req.body.ownerId && mongoose.Types.ObjectId.isValid(req.body.ownerId))
         groupData.ownerId = req.body.ownerId;
 
-    // Validate members
+   /* // Validate members
     groupData.members = [];
     if (req.body.members) {
         for (var i = 0; i < req.body.members.length; i++) {
@@ -41,7 +48,9 @@ exports.createGroup = (req, res, next) => {
             if (validateMember(req.body.members[i]))
                 groupData.members.push(req.body.members[i]);
         }
-    }
+    }*/
+
+    groupData.members = req.body.members;
 
     // Save document
     var newGroup = new Group(groupData);
@@ -99,78 +108,44 @@ exports.addMember = (req, res, next) => {
                     if (err) return next(err) 
                     if (!user) res.status(404).send('No user with that id');
                     
-                    res.sendStatus(200);
+                    return res.sendStatus(200);
             });
     });
-
-
-    User.findById(req.body.memberId, (err, user) => {
-        if (err) return next(err);
-        if (!user) return res.status(404).send('No user with that id');
-
-        var memberData = {
-            memberId: user._id, 
-            name: user.firstName + user.lastName
-        };
-        
-        // Update group with new member.
-        Group.findByIdAndUpdate(req.params.id,
-        {$addToSet: {members: memberData}},
-        (err, group) => {
-            if (err) return next(err);
-            if (!group) return res.status(404).send('No group with that id');
-           
-            var groupData = {
-                groupId: group._id,
-                name: group.name,
-                description: group.description
-            };
-            
-            // Now update user with group information.
-            User.findByIdAndUpdate(req.body.memberId, 
-            {$addToSet: {groups: groupData}},
-            (err, user) => {
-                if (err) return next(err);
-                if (!user) return res.status(404).send('No user with that id');
-
-                return res.sendStatus(200);
-            });
-        }); 
-
-    });
-    /*
-    var memberData = {};
-    var groupData = {};
-
-    User.findById(req.body.memberId)
-        .then(user => {
-            console.log(user); 
-            memberData.memberId = user._id;
-            if (user.firstName && user.lastName)
-                memberData.name = user.firstName + ' ' + user.lastName;
-            else memberData.name = '';
-        })
-        .then(Group.findById(req.params.id).exec())
-        .then(group => {
-            console.log(req.params.id);
-            groupData.groupId = group._id;
-            groupData.name = group.name;
-        })
-        .then(Promise.all([
-            User.findByIdAndUpdate(req.body.memberId,
-                {$addToSet: {groups: groupData}}),
-            Group.findByIdAndUpdate(req.params.id,
-                {$addToSet: {members: memberData}})
-        ]))
-        .catch((err) => {
-            return next(err);
-         });*/
 };
 
 exports.getMembers = (req, res, next) => {
+    // Validate group id.
+    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+        return res.status(404).send('Invalid group id');
+
+    // Get a list of members for the group.
+    Group.findById(req.params.id, 'members', (err, group) => {
+        if (err) return next(err);
+        if (!group) return res.status(404).send('No group with that id');
+        
+        // Populate the members array.
+        group.populate('members', 'firstName lastName', (err, group) => {
+            if (err) return next(err);
+            if (!group) return res.status(404).send('No group with that id.');
+
+            return res.json(group);
+        });
+    });
 };
 
 exports.removeMember = (req, res, next) => {
+    // Validate group id.
+    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+        return res.status(404).send('Invalid group id');
+
+    Group.findByIdAndUpdate(req.params.id, 
+        {$pullAll: {members: [req.body.memberId]}},
+        (err, group) => {
+            if (err) return next(err);
+            if (!group) return res.status(404).send('No group with that id');
+            
+            return res.sendStatus(200);
+    });
 };
 
 /*
