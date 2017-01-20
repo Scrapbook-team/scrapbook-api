@@ -5,10 +5,8 @@ var conversationSchema = new Schema({
         messages: [{
             text: String,
             mediaId: Schema.ObjectId,
-            url: String,
             timePosted: Date,
-            userId: Schema.ObjectId,
-            name: String,
+            userId: {type: Schema.ObjectId, ref: 'User'},
             background: String,
             readBy: [{
                 _id: false,
@@ -26,6 +24,6 @@ var conversationSchema = new Schema({
 );
 
 
-var conversation = mongoose.model('Conversation', conversationSchema);
+var Conversation = mongoose.model('Conversation', conversationSchema);
 
 module.exports = Conversation;

@@ -9,6 +9,7 @@ const config = require('./models/config');
 const users = require('./controllers/users');
 const auth = require('./controllers/auth');
 const group = require('./controllers/groups');
+const message = require('./controllers/messages');
 
 // http://mongoosejs.com/docs/promises.html
 mongoose.Promise = global.Promise;
@@ -60,7 +61,9 @@ router.route('/groups/:id/members')
     .post(auth.validateToken, group.addMember)
     .get(auth.validateToken, group.getMembers)
     .delete(auth.validateToken, group.removeMember)
-
+router.route('/groups/:id/messages')
+    .post(auth.validateToken, message.sendMessage
+            )
 router.route('/auth/token')
     .post(auth.loginUser);
 
