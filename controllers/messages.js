@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 const Group = require('../models/schemas/group');
 const Conversation = require('../models/schemas/conversation');
 
+/*
+ * Send a new message to a group.
+ */
 exports.sendMessage = (req, res, next) => {
     Group.findById(req.params.id)
         .select('conversations')
@@ -32,14 +35,14 @@ exports.sendMessage = (req, res, next) => {
 
             // Create first conversation.
             if (group.conversations.length === 0) {
-                return newConversation(res, conversationData, req.params.id);
+                return createConversation(res, conversationData, req.params.id);
             }
             else { 
                 newConversation = group.conversations[0];
 
                 // If time since last message was greater than conversation timeout, create new conversation.
                 if (conversationTimeout(newConversation.updatedDate)) {
-                    return newConversation(res, conversationData, req.params.id);
+                    return createConversation(res, conversationData, req.params.id);
                 }
                 // Otherwise, add to current conversation.
                 else {
@@ -57,7 +60,32 @@ exports.sendMessage = (req, res, next) => {
     });
 };
 
+/*
+ * Get the most recent messages.
+ */
 exports.getMessages = (req, res, next) => {
+    // Validate group id.
+    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+        return res.status(404).send('Invalid group id.');
+    
+    // Pagination of messages
+    var page = 0;
+    if (req.query.page) {
+        console.log(req.query.page);
+        page = req.query.page;
+    }
+
+    // Get 10 conversations, based on the page position.
+    Group.findById(req.params.id)
+        .select('conversations')
+        .populate('conversations')
+        .slice('conversations', [page * 10, 10])
+        .exec((err, group) => {
+            if (err) return next(err);
+            if (!group) return res.status(404).send('No group with that id.');
+
+            return res.json(group.conversations);
+        });
 };
 
 exports.readMessage = (req, res, next) => {
@@ -66,7 +94,7 @@ exports.readMessage = (req, res, next) => {
 /*
  * Create a new conversation.
  */
-function newConversation(res, conversationData, groupId) {
+function createConversation(res, conversationData, groupId) {
     // Create a new conversation in the database.
     newConversation = Conversation(conversationData);
     newConversation.save((err, conversation) => {

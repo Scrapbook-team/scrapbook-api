@@ -62,8 +62,9 @@ router.route('/groups/:id/members')
     .get(auth.validateToken, group.getMembers)
     .delete(auth.validateToken, group.removeMember)
 router.route('/groups/:id/messages')
-    .post(auth.validateToken, message.sendMessage
-            )
+    .post(auth.validateToken, message.sendMessage)
+    .get(auth.validateToken, message.getMessages)
+
 router.route('/auth/token')
     .post(auth.loginUser);
 
