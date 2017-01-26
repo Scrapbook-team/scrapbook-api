@@ -10,6 +10,7 @@ const users = require('./controllers/users');
 const auth = require('./controllers/auth');
 const group = require('./controllers/groups');
 const message = require('./controllers/messages');
+const photo = require('./controllers/photos');
 
 // http://mongoosejs.com/docs/promises.html
 mongoose.Promise = global.Promise;
@@ -51,6 +52,8 @@ router.route('/users/:id/contacts')
 //    .delete(users.deleteContact)
 router.route('/users/:id/groups')
     .get(auth.validateToken, users.getGroups)
+router.route('/users/:id/photos')
+    .get(auth.validateToken, users.getPhotos)
 
 router.route('/groups')
     .post(auth.validateToken, group.createGroup)
@@ -64,6 +67,14 @@ router.route('/groups/:id/members')
 router.route('/groups/:id/messages')
     .post(auth.validateToken, message.sendMessage)
     .get(auth.validateToken, message.getMessages)
+    .put(auth.validateToken, message.readMessage)
+router.route('/groups/:id/photos')
+    .post(auth.validateToken, photo.addPhoto)
+    .get(auth.validateToken, photo.getPhotos)
+    
+router.route('/photos/:id')
+    .get(auth.validateToken, photo.getPhoto)
+    .put(auth.validateToken, photo.updatePhoto)
 
 router.route('/auth/token')
     .post(auth.loginUser);

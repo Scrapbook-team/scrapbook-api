@@ -169,7 +169,22 @@ exports.getGroups = (req, res, next) => {
             if (err) return next(user);
             if (!user) return res.status(404).send('No user with that id');
 
-            return res.json(user);
+            return res.json(user.groups);
+    });
+};
+
+/*
+ * List photos a user has added.
+ */
+exports.getPhotos = (req, res, next) => {
+    User.findById(req.params.id)
+        .select('photos')
+        .populate('photos')
+        .exec((err, user) => {
+            if (err) return next(user);
+            if (!user) return res.status(404).send('No user with that id');
+
+            return res.json(user.photos);
     });
 };
 

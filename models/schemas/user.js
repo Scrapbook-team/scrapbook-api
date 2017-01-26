@@ -21,9 +21,9 @@ var userSchema = new Schema({
             type: Schema.ObjectId,
             ref: 'Group'
         }],
-        media: [{
+        photos: [{
             type: Schema.ObjectId,
-            ref: 'Media'
+            ref: 'Photo'
         }]
     },
     {

@@ -88,7 +88,27 @@ exports.getMessages = (req, res, next) => {
         });
 };
 
+/*
+ * Mark most recent message as read by a user.
+ */
 exports.readMessage = (req, res, next) => {
+    Group.findById(req.params.id)
+        .select('conversations')
+        .slice('conversations', 1)
+        .exec((err, group) => {
+            if (err) return next(err);
+            if (!group) return res.status(404).send('No group with that id.');
+            
+            console.log(group);
+            Conversation.findByIdAndUpdate(group.conversations[0]._id,
+                {$addToSet: {'messages.$.readBy': req.body.name}},
+                (err, conversation) => {
+                    if (err) return next(err);
+                    if (!conversation) return res.status(400).send('Error reading messages.');
+
+                    return res.sendStatus(200);
+                });
+        });
 };
 
 /*

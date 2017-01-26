@@ -1,21 +1,22 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-var groupSchema = new Schema({
+var photoSchema = new Schema({
         name: {type: String, required: true, trim: true, sparse: true},
-        description: String,
-        background: String,
-        members: [{
+        caption: String,
+        ownerId: {
             type: Schema.ObjectId,
             ref: 'User'
-        }],
-        conversations: [{
+        },
+        groupId: {
             type: Schema.ObjectId,
-            ref: 'Conversation'
-        }],
-        photos: [{
+            ref: 'Group'
+        },
+        urls: [String],
+        version: Number,
+        reactions: [{
             type: Schema.ObjectId,
-            ref: 'Photo'
+            ref: 'User'
         }]
     },
     {
@@ -28,6 +29,6 @@ var groupSchema = new Schema({
 );
 
 
-var Group = mongoose.model('Group', groupSchema);
+var Photo = mongoose.model('Photo', photoSchema);
 
-module.exports = Group;
+module.exports = Photo;

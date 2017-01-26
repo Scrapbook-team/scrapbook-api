@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 var conversationSchema = new Schema({
         messages: [{
             text: String,
-            mediaId: Schema.ObjectId,
+            photoId: Schema.ObjectId,
             timePosted: Date,
             userId: {type: Schema.ObjectId, ref: 'User'},
             background: String,
