@@ -189,12 +189,20 @@ exports.getPhotos = (req, res, next) => {
 };
 
 /*
- * Validate a contact in a user's document
+ * This will just remove a photo from a user.
  */
-function validateContact(contact) {
-    if (!contact.contactId) return false;
-    if (!contact.contactId.match(/^[0-9a-fA-F]{24}$/)) return false;
-    if (!contact.name) return false;
-    if (!(typeof contact.name === 'string')) return false;
-    return true;
-}
+exports.removePhotoFromUser = (req, res, next) => {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+        return res.status(400).send('Invalid user id');
+    if (!mongoose.Types.ObjectId.isValid(req.body.photoId))
+        return res.status(400).send('Invalid photo id');
+
+    User.findByIdAndUpdate(req.params.id,
+        {$pull: {photos: req.body.photoId}},
+        (err, user) => {
+            if (err) return next(err);
+            if (!user) return res.status(404).send('No user with that id');
+
+            return res.sendStatus(200);
+        });
+};

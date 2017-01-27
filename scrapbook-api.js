@@ -11,6 +11,7 @@ const auth = require('./controllers/auth');
 const group = require('./controllers/groups');
 const message = require('./controllers/messages');
 const photo = require('./controllers/photos');
+const album = require('./controllers/albums');
 
 // http://mongoosejs.com/docs/promises.html
 mongoose.Promise = global.Promise;
@@ -71,10 +72,18 @@ router.route('/groups/:id/messages')
 router.route('/groups/:id/photos')
     .post(auth.validateToken, photo.addPhoto)
     .get(auth.validateToken, photo.getPhotos)
-    
+router.route('/groups/:id/albums')
+    .post(auth.validateToken, album.createAlbum)
+    .get(auth.validateToken, album.getAlbums)
+
 router.route('/photos/:id')
     .get(auth.validateToken, photo.getPhoto)
     .put(auth.validateToken, photo.updatePhoto)
+
+router.route('/albums/:id')
+    .get(auth.validateToken, album.getAlbum)
+    .put(auth.validateToken, album.updateAlbum)
+    .delete(auth.validateToken, album.removeAlbum)
 
 router.route('/auth/token')
     .post(auth.loginUser);

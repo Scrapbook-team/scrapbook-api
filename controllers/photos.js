@@ -5,7 +5,7 @@ const User = require('../models/schemas/user');
 
 exports.addPhoto = (req, res, next) => {
     // Validate input.
-    var photoData = {};
+    var photoData = {version: 0};
     if (req.body.name && typeof req.body.name === 'string')
         photoData.name = req.body.name;
     if (req.body.caption && typeof req.body.caption === 'string')
@@ -59,6 +59,9 @@ exports.getPhotos = (req, res, next) => {
         });
 };
 
+/*
+ * Get a single photo by id.
+ */
 exports.getPhoto = (req, res, next) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id))
         return res.status(400).send('Invalid photo id');
@@ -71,6 +74,9 @@ exports.getPhoto = (req, res, next) => {
     });
 };
 
+/*
+ * Update a photo's data, potentially adding a new revision.
+ */
 exports.updatePhoto = (req, res, next) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id))
         return res.status(400).send('Invalid photo id');
@@ -81,8 +87,11 @@ exports.updatePhoto = (req, res, next) => {
         updateData.name = req.body.name;
     if (req.body.caption && typeof req.body.caption === 'string')
         updateData.caption = req.body.caption;
-    if (req.body.url && typeof req.body.url === 'string')
+    // Push new url to top of version list, and increase version count.
+    if (req.body.url && typeof req.body.url === 'string') {
         updateData.$push = {urls: req.body.url};
+        updateData.$inc = {version: 1};
+    }
 
     Photo.findByIdAndUpdate(req.params.id, updateData, (err, photo) => {
         if (err) return next(err);
@@ -92,7 +101,23 @@ exports.updatePhoto = (req, res, next) => {
     });
 };
 
-exports.deletePhoto = (req, res, next) => {
+/*
+ * This will just remove a photo from a group.
+ */
+exports.removePhotoFromGroup = (req, res, next) => {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+        return res.status(400).send('Invalid group id');
+    if (!mongoose.Types.ObjectId.isValid(req.body.photoId))
+        return res.status(400).send('Invalid photo id');
+
+    Group.findByIdAndUpdate(req.params.id,
+        {$pull: {photos: req.body.photoId}},
+        (err, group) => {
+            if (err) return next(err);
+            if (!group) return res.status(404).send('No group with that id');
+
+            return res.sendStatus(200);
+        });
 };
 
 

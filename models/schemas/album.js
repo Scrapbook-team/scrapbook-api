@@ -1,25 +1,16 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-var groupSchema = new Schema({
+var albumSchema = new Schema({
         name: {type: String, required: true, trim: true, sparse: true},
         description: String,
-        background: String,
-        members: [{
+        groupId: {
             type: Schema.ObjectId,
-            ref: 'User'
-        }],
-        conversations: [{
-            type: Schema.ObjectId,
-            ref: 'Conversation'
-        }],
+            ref: 'Group'
+        },
         photos: [{
             type: Schema.ObjectId,
             ref: 'Photo'
-        }],
-        albums: [{
-            type: Schema.ObjectId,
-            ref: 'Album'
         }]
     },
     {
@@ -32,6 +23,6 @@ var groupSchema = new Schema({
 );
 
 
-var Group = mongoose.model('Group', groupSchema);
+var Album = mongoose.model('Album', albumSchema);
 
-module.exports = Group;
+module.exports = Album;
