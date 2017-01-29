@@ -159,6 +159,27 @@ exports.addContact = (req, res, next) => {
 };
 
 /*
+ * Remove a contact for a user.
+ */
+exports.removeContact = (req, res, next) => {
+    // Validate ids
+    if(!mongoose.Types.ObjectId.isValid(req.params.id))
+        return res.status(400).send('Invalid user id');
+    if(!mongoose.Types.ObjectId.isValid(req.body.contactId))
+        return res.status(400).send('Invalid contact id');
+    
+    // Remove contact from contacts list.
+    User.findByIdAndUpdate(req.params.id,
+        {$pull: {contacts: req.body.contactId}},
+        (err, user) => {
+            if (err) return next(err);
+            if (!user) return res.status(404).send('No user with that id');
+
+            return res.sendStatus(200);
+    });
+};
+
+/*
  * List groups a user is a part of.
  */
 exports.getGroups = (req, res, next) => {

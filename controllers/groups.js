@@ -87,6 +87,9 @@ exports.updateGroup = (req, res, next) => {
     });
 };
 
+/*
+ * TODO This
+ */
 exports.deleteGroup = (req, res, next) => {
 };
 
@@ -113,6 +116,9 @@ exports.addMember = (req, res, next) => {
     });
 };
 
+/*
+ * Get all the members of a group.
+ */
 exports.getMembers = (req, res, next) => {
     // Validate group id.
     if (!mongoose.Types.ObjectId.isValid(req.params.id))
@@ -133,6 +139,9 @@ exports.getMembers = (req, res, next) => {
     });
 };
 
+/*
+ * Remove a member from a group.
+ */
 exports.removeMember = (req, res, next) => {
     // Validate group id.
     if (!mongoose.Types.ObjectId.isValid(req.params.id))
@@ -147,15 +156,3 @@ exports.removeMember = (req, res, next) => {
             return res.sendStatus(200);
     });
 };
-
-/*
- * Validate a member.
- */
-function validateMember(member) {
-    if (!member.memberId) return false;
-    if (!member.memberId.match(/^[0-9a-fA-F]{24}$/)) return false;
-    if (!member.name) return false;
-    if (!(typeof member.name === 'string')) return false;
-    return true;
-}
-

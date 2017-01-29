@@ -39,7 +39,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Routes
 //================================================
 
-
+// User routes
 router.route('/users')
     .post(users.createUser, auth.loginUser)
 router.route('/users/:id')
@@ -49,12 +49,14 @@ router.route('/users/:id')
 router.route('/users/:id/contacts')
     .get(auth.validateToken, users.getContacts)
     .post(auth.validateToken, users.addContact)
-//router.route('/users/:id/contacts/:contactId')
-//    .delete(users.deleteContact)
+router.route('/users/:id/contacts/:contactId')
+    .delete(users.removeContact)
 router.route('/users/:id/groups')
     .get(auth.validateToken, users.getGroups)
 router.route('/users/:id/photos')
     .get(auth.validateToken, users.getPhotos)
+router.route('/users/:id/photos/:photoId')
+    .delete(auth.validateToken, users.removePhotoFromUser)
 
 router.route('/groups')
     .post(auth.validateToken, group.createGroup)
@@ -72,6 +74,8 @@ router.route('/groups/:id/messages')
 router.route('/groups/:id/photos')
     .post(auth.validateToken, photo.addPhoto)
     .get(auth.validateToken, photo.getPhotos)
+router.route('/groups/:id/photos/:photoId')
+    .delete(auth.validateToken, photo.removePhotoFromGroup)
 router.route('/groups/:id/albums')
     .post(auth.validateToken, album.createAlbum)
     .get(auth.validateToken, album.getAlbums)
