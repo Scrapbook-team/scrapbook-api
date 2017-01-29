@@ -218,7 +218,8 @@ exports.removePhotoFromUser = (req, res, next) => {
         return res.status(400).send('Invalid user id');
     if (!mongoose.Types.ObjectId.isValid(req.body.photoId))
         return res.status(400).send('Invalid photo id');
-
+    
+    // Pull a photo out of users photo array.
     User.findByIdAndUpdate(req.params.id,
         {$pull: {photos: req.body.photoId}},
         (err, user) => {
