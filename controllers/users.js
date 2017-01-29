@@ -64,6 +64,7 @@ exports.createUser = (req, res, next) => {
             if (err.code === 11000) return res.status(400).send('Email taken');
             return next(err);
         }            
+        return res.json(user);
     });
 };
 
