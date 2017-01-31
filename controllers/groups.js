@@ -51,12 +51,22 @@ exports.createGroup = (req, res, next) => {
     }*/
 
     groupData.members = req.body.members;
+    
 
     // Save document
     var newGroup = new Group(groupData);
     newGroup.save((err, group) => {
         if (err) return next(err);
-        res.json(group);
+        
+        // Add group to each member.
+        User.update({_id: {$in: groupData.members}},
+            {$addToSet: {groups: group._id}},
+            (err, users) => {
+                if (err) return next(err);
+                if (!users) return res.status(400).send('Failed to update users');
+
+                return res.json(group);
+        });
     });
 };
 
