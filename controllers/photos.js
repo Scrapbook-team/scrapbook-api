@@ -3,6 +3,7 @@ const Photo = require('../models/schemas/photo');
 const Group = require('../models/schemas/group');
 const User = require('../models/schemas/user');
 
+
 exports.addPhoto = (req, res, next) => {
     // Validate input.
     var photoData = {version: 0};
@@ -25,13 +26,15 @@ exports.addPhoto = (req, res, next) => {
     newPhoto.save((err, photo) => {
         if (err) return next(err);
         if (!photo) return res.status(400).send('Failed to add photo');
-        
+
+        // Add photo to group.
         Group.findByIdAndUpdate(req.params.id,
             {$addToSet: {photos: photo._id}},
             (err, group) => {
                 if (err) return next(err);
                 if (!group) return res.status(404).send('No group with that id');
                 
+                // Add photo to user.
                 User.findByIdAndUpdate(req.body.ownerId,
                     {$addToSet: {photos: photo._id}},
                     (err, user) => {

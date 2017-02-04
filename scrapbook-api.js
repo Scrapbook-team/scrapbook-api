@@ -12,6 +12,7 @@ const group = require('./controllers/groups');
 const message = require('./controllers/messages');
 const photo = require('./controllers/photos');
 const album = require('./controllers/albums');
+const upload = require('./controllers/upload');
 
 // http://mongoosejs.com/docs/promises.html
 mongoose.Promise = global.Promise;
@@ -22,6 +23,7 @@ var router = express.Router();
 
 // log if in dev mode
 if (app.get('env') !== 'production') app.use(logger('dev'));
+
 // run init script from init directory
 //require('./init/init');
 
@@ -72,7 +74,7 @@ router.route('/groups/:id/messages')
     .get(auth.validateToken, message.getMessages)
     .put(auth.validateToken, message.readMessage)
 router.route('/groups/:id/photos')
-    .post(auth.validateToken, photo.addPhoto)
+    .post(auth.validateToken, upload.uploadPhoto, photo.addPhoto)
     .get(auth.validateToken, photo.getPhotos)
 router.route('/groups/:id/photos/:photoId')
     .delete(auth.validateToken, photo.removePhotoFromGroup)
