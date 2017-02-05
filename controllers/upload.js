@@ -11,10 +11,10 @@ const s3 = new aws.S3({
 });
 
 // Helps form the request for uploading to S3.
-const upload = multer({
+exports.upload = multer({
     storage: multerS3({
         s3,
-        bucket: process.env.AWS_BUCKET,
+        bucket: 'scrapbook-testing',
         acl: 'public-read',
         metadata(req, file, cb) {
             cb(null, {fieldName: file.fieldname});

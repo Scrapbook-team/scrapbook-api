@@ -11,8 +11,6 @@ exports.addPhoto = (req, res, next) => {
         photoData.name = req.body.name;
     if (req.body.caption && typeof req.body.caption === 'string')
         photoData.caption = req.body.caption;
-    if (req.body.url && typeof req.body.url === 'string')
-        photoData.urls = [req.body.url];
     if (req.body.ownerId && mongoose.Types.ObjectId.isValid(req.body.ownerId))
         photoData.ownerId = req.body.ownerId;
 
@@ -20,6 +18,8 @@ exports.addPhoto = (req, res, next) => {
         return res.status(400).send('Invalid group id');
     else
         photoData.groupId = req.params.id;
+
+    photoData.url = 'https://s3.amazonaws.com/' + process.env.AWS_BUCKET + '/' + req.file.filename;
 
     // Save photo.
     var newPhoto = new Photo(photoData);
