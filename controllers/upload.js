@@ -25,11 +25,3 @@ exports.upload = multer({
     })
 });
 
-/*
- * Upload a file to AWS S3
- */
-exports.uploadPhoto = (req, res, next) => {
-    // Upload the photo.
-    upload.single('photo');
-    req.url = 'https://s3.amazonaws.com/' + process.env.AWS_BUCKET + '/' + req.file.filename;
-};

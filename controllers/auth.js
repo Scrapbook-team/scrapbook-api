@@ -17,7 +17,7 @@ exports.loginUser = (req, res, next) => {
     // Check if user exists
     User.findOne({email: req.body.email}, (err, user) => {
         if (err) return next(err);
-        if (!user) return res.status(400).send('No user with that email');
+        if (!user) return res.status(401).send('No user with that email');
 
         // Validate password.
         user.comparePassword(req.body.password, (err, isMatch) => {
