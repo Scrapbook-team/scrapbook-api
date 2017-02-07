@@ -19,7 +19,9 @@ exports.addPhoto = (req, res, next) => {
     else
         photoData.groupId = req.params.id;
 
-    photoData.url = 'https://s3.amazonaws.com/' + process.env.AWS_BUCKET + '/' + req.file.filename;
+    // Location of image.
+    if (req.file.location && typeof req.file.location === 'string')
+        photoData.urls = [req.file.location];
 
     // Save photo.
     var newPhoto = new Photo(photoData);
