@@ -160,6 +160,12 @@ exports.addContact = (req, res, next) => {
 };
 
 /*
+ * Find a list of contacts that a user may want to add.
+ */
+exports.findContacts = (req, res, next) => {
+};
+
+/*
  * Remove a contact for a user.
  */
 exports.removeContact = (req, res, next) => {

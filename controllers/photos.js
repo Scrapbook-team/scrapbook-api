@@ -31,14 +31,14 @@ exports.addPhoto = (req, res, next) => {
 
         // Add photo to group.
         Group.findByIdAndUpdate(req.params.id,
-            {$addToSet: {photos: photo._id}},
+            {$push: {photos: photo._id}},
             (err, group) => {
                 if (err) return next(err);
                 if (!group) return res.status(404).send('No group with that id');
                 
                 // Add photo to user.
                 User.findByIdAndUpdate(req.body.ownerId,
-                    {$addToSet: {photos: photo._id}},
+                    {$push: {photos: photo._id}},
                     (err, user) => {
                         if (err) return next(err);
                         if (!user) return res.status(404).send('No user with that id');
