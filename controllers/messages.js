@@ -27,7 +27,7 @@ exports.sendMessage = (req, res, next) => {
             if (req.body.background && mongoose.Types.ObjectId.isValid(req.body.background))
                 messageData.background = req.body.background;
 
-            messageData.timePosted = Date();
+            messageData.createdAt = Date();
             
             conversationData = {
                 messages: [messageData]
@@ -47,11 +47,11 @@ exports.sendMessage = (req, res, next) => {
                 // Otherwise, add to current conversation.
                 else {
                     Conversation.findByIdAndUpdate(newConversation._id,
-                        {$push: {messages: {$each: [messageData], $postion: 0}}},
+                        {$push: {messages: {$each: [messageData], $position: 0}}},
                         (err, conversation) => {
                             if (err) return next(err);
                             if (!conversation)
-                                return res.status(400).send('Failed to create conversation.');
+                                return res.status(400).send('Failed to send message.');
 
                             return res.sendStatus(200);
                     });
@@ -80,15 +80,21 @@ exports.getMessages = (req, res, next) => {
         .select('conversations')
         .slice('conversations', [page * 10, 10])
         .populate('conversations')
-        .populate({
-	        path: 'conversations.messages.userId',
-            model: 'User',
-        })
         .exec((err, group) => {
             if (err) return next(err);
             if (!group) return res.status(404).send('No group with that id.');
 
-            return res.json(group.conversations);
+            Group.populate(group,
+                {path: 'conversations.messages.userId', model: 'User', select: 'firstName lastName _id'}, 
+                (err, group) => {
+                    // Collapse conversation model so just a list of messages is returned.
+                    var messages = [];
+                    for (var i = 0; i < group.conversations.length; i++) {
+                        messages.push.apply(messages, group.conversations[i].messages);
+                    }
+
+                    return res.json(messages);
+            });
         });
 };
 

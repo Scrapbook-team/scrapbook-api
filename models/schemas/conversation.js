@@ -5,7 +5,7 @@ var conversationSchema = new Schema({
         messages: [{
             text: String,
             photoId: Schema.ObjectId,
-            timePosted: Date,
+            createdAt: Date,
             userId: {type: Schema.ObjectId, ref: 'User'},
             background: String,
             readBy: [{
