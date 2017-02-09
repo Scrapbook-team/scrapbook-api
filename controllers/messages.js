@@ -20,11 +20,11 @@ exports.sendMessage = (req, res, next) => {
             messageData = {};
             if (req.body.text && typeof req.body.text === 'string')
                 messageData.text = req.body.text;
-            if (req.body.mediaId && !mongoose.Types.ObjectId.isValdid(req.body.mediaId))
+            if (req.body.mediaId && mongoose.Types.ObjectId.isValdid(req.body.mediaId))
                 messageData.mediaId = req.body.mediaId;
-            if (req.body.userId && !mongoose.Types.ObjectId.isValid(req.body.userId))
+            if (req.body.userId && mongoose.Types.ObjectId.isValid(req.body.userId))
                 messageData.userId = req.body.userId;
-            if (req.body.background && !mongoose.Types.ObjectId.isValid(req.body.background))
+            if (req.body.background && mongoose.Types.ObjectId.isValid(req.body.background))
                 messageData.background = req.body.background;
 
             messageData.timePosted = Date();
@@ -78,8 +78,12 @@ exports.getMessages = (req, res, next) => {
     // Get 10 conversations, based on the page position.
     Group.findById(req.params.id)
         .select('conversations')
-        .populate('conversations')
         .slice('conversations', [page * 10, 10])
+        .populate('conversations')
+        .populate({
+	        path: 'conversations.messages.userId',
+            model: 'User',
+        })
         .exec((err, group) => {
             if (err) return next(err);
             if (!group) return res.status(404).send('No group with that id.');
@@ -124,7 +128,7 @@ function createConversation(res, conversationData, groupId) {
         
         // Add conversation to group as well.
         Group.findByIdAndUpdate(groupId,
-            {$addToSet: {conversations: conversation._id}},
+            {$push: {conversations: {$each: [conversation._id], $position: 0}}},
             (err, group) => {
                 if (err) return next(err);
                 if (!group) return res.status(404).send('No group with that id.');
