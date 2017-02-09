@@ -93,6 +93,18 @@ exports.getMessages = (req, res, next) => {
                         messages.push.apply(messages, group.conversations[i].messages);
                     }
 
+                    // If a time is specified, only return messages up to that time.
+                    if (req.query.time && (!req.query.page || req.query.page == 0)) {
+                        console.log(req.query.time);
+                        for (var i = 0; i < messages.length; i++) {
+                            console.log(new Date(messages[i].createdAt) - new Date(req.query.time));
+                            if(Date.parse(messages[i].createdAt) <= Date.parse(req.query.time)) {
+                                return res.json(messages.slice(0, i + 1));
+                            }
+                        }
+                    }
+
+                    // Otherwise return all messages from the last 10 conversations.
                     return res.json(messages);
             });
         });
